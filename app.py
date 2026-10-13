@@ -1,6 +1,7 @@
 import streamlit as st
 import json
 import os
+from datetime import datetime, date
 
 st.set_page_config(page_title="🥕 당근 모임 관리", page_icon="🥕", layout="centered")
 
@@ -26,6 +27,9 @@ st.caption("초보 운영자를 위한 직관적인 회원 관리 도구")
 
 tab1, tab2, tab3 = st.tabs(["📋 회원 목록", "➕ 회원 등록", "⚙️ 참석 관리"])
 
+# 오늘 날짜
+today = date.today()
+
 # [TAB 1] 회원 목록
 with tab1:
     st.subheader("전체 회원 현황")
@@ -44,16 +48,28 @@ with tab1:
         st.metric(label="총 회원 수", value=f"{len(filtered_members)} 명")
 
         for uid, info in filtered_members.items():
-            badge = "✅ 참석" if info["월1회_참석여부"] == "참석" else "❌ 미참석"
+            last_date_str = info.get("최근참석일", str(today))
+            last_date = datetime.strptime(last_date_str, "%Y-%m-%d").date()
+            days_passed = (today - last_date).days
+
+            # 30일(한달) 경과 여부 카운팅 상태 표시
+            if days_passed > 30:
+                count_status = f"⚠️ {days_passed}일 경과 (한달 초과!)"
+            else:
+                count_status = f"✅ D+{days_passed}일 (정상)"
+
+            badge = "✅ 참석" if info.get("월1회_참석여부") == "참석" else "❌ 미참석"
             
-            with st.expander(f"👤 {uid} ({info['성별']}) | {badge}"):
+            with st.expander(f"👤 {uid} ({info['성별']}) | {badge} | {count_status}"):
                 col1, col2 = st.columns(2)
                 with col1:
                     st.write(f"**📍 지역:** {info['지역']}")
                     st.write(f"**✨ 외모:** {info['외모']}")
+                    st.write(f"**📅 최근 참석일:** {last_date_str}")
                 with col2:
-                    st.write(f"**📅 참석:** {info['월1회_참석여부']}")
                     st.write(f"**💖 성격:** {info['성격']}")
+                    st.write(f"**⏳ 지나간 날짜:** {days_passed}일 째")
+                    st.write(f"**📌 월1회 상태:** {info.get('월1회_참석여부', '미참석')}")
                 
                 st.write(f"**📝 활동 특징:** {info['활동특징']}")
                 
@@ -72,6 +88,8 @@ with tab2:
         region = st.text_input("지역", placeholder="예: 강남구 역삼동")
         
         attendance = st.radio("이번 달 참석 여부", ["참석", "미참석"], horizontal=True)
+        attend_date = st.date_input("최근 참석 날짜", value=today)
+        
         feature = st.text_area("활동 특징", placeholder="예: 주말 모임 선호, 친화력 좋음")
         
         st.write("---")
@@ -91,6 +109,7 @@ with tab2:
                     "성별": gender,
                     "지역": region,
                     "월1회_참석여부": attendance,
+                    "최근참석일": str(attend_date),
                     "활동특징": feature,
                     "외모": looks,
                     "성격": personality
@@ -100,18 +119,22 @@ with tab2:
 
 # [TAB 3] 참석 관리
 with tab3:
-    st.subheader("이번 달 참석 체크")
+    st.subheader("이번 달 참석 체크 & 날짜 갱신")
     if not members:
         st.info("등록된 회원이 없습니다.")
     else:
         target_uid = st.selectbox("회원 선택", list(members.keys()))
-        current_status = members[target_uid]["월1회_참석여부"]
-        st.write(f"현재 상태: **{current_status}**")
+        current_status = members[target_uid].get("월1회_참석여부", "미참석")
+        current_date = members[target_uid].get("최근참석일", str(today))
+        
+        st.write(f"현재 참석 상태: **{current_status}** | 마지막 참석일: **{current_date}**")
         
         new_status = st.radio("참석 여부 변경", ["참석", "미참석"], key="update_status", horizontal=True)
+        new_date = st.date_input("참석 날짜 선택", value=today)
         
-        if st.button("상태 업데이트", use_container_width=True):
+        if st.button("상태 및 날짜 업데이트", use_container_width=True):
             members[target_uid]["월1회_참석여부"] = new_status
+            members[target_uid]["최근참석일"] = str(new_date)
             save_data(members)
-            st.success(f"[{target_uid}] 회원 상태가 '{new_status}'(으)로 변경되었습니다.")
+            st.success(f"[{target_uid}] 회원의 참석 정보가 업데이트되었습니다!")
             st.rerun()
