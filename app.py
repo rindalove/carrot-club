@@ -3,7 +3,7 @@ import json
 import os
 from datetime import datetime, date
 
-st.set_page_config(page_title="🥕 당근 모임 관리", page_icon="🥕", layout="centered")
+st.set_page_config(page_title="🥕 3040 솔로메이트 회원관리", page_icon="🥕", layout="centered")
 
 DATA_FILE = "club_members.json"
 
