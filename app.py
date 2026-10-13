@@ -122,4 +122,39 @@ with tab1:
 # [TAB 2] 회원 등록
 with tab2:
     st.subheader("신규 회원 등록")
-    with st.form("add_form", clear_on_
+    with st.form("add_form", clear_on_submit=True):
+        uid = st.text_input("아이디 (필수)")
+        gen = st.radio("성별", ["F", "M"], horizontal=True)
+        by = st.text_input("출생년도 (예: 85년생)")
+        reg = st.text_input("지역")
+        jd = st.date_input("가입일자", value=today)
+        att = st.radio("참석여부", ["참석", "미참석"], horizontal=True)
+        feat = st.text_area("특징", value="-")
+        lk = st.select_slider("외모", ["하", "중", "상"], value="중")
+        ps = st.select_slider("성격", ["하", "중", "상"], value="중")
+        
+        if st.form_submit_button("저장"):
+            if not uid.strip():
+                st.error("아이디를 입력해주세요!")
+            elif uid in members:
+                st.error("이미 존재하는 아이디입니다.")
+            else:
+                members[uid] = {
+                    "성별": gen, "출생년도": by or "미입력", "지역": reg, 
+                    "가입일자": str(jd), "월1회_참석여부": att, 
+                    "최근참석일": str(today), "활동특징": feat, "외모": lk, "성격": ps
+                }
+                save_data(members)
+                st.success("회원이 성공적으로 등록되었습니다!")
+                st.rerun()
+
+# [TAB 3] 참석 관리
+with tab3:
+    st.subheader("참석 상태 관리")
+    if members:
+        t_uid = st.selectbox("회원 선택", list(members.keys()))
+        ns = st.radio("참석 여부", ["참석", "미참석"], horizontal=True)
+        nd = st.date_input("참석 날짜", value=today)
+        if st.button("업데이트"):
+            members[t_uid]["월1회_참석여부"] = ns
+            members[t_uid]["최근참석일"] = str(nd)
