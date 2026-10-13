@@ -22,8 +22,8 @@ def save_data(data):
 
 members = load_data()
 
-st.title("🥕 당근 모임 회원 관리")
-st.caption("초보 운영자를 위한 직관적인 회원 관리 도구")
+st.title("🥕 3040 솔로메이트 회원관리")
+st.caption("운영진을 위한 직관적인 회원 관리 도구")
 
 tab1, tab2, tab3 = st.tabs(["📋 회원 목록", "➕ 회원 등록", "⚙️ 참석 관리"])
 
