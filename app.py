@@ -7,7 +7,7 @@ st.set_page_config(page_title="3040솔로메이트 어드민", page_icon="🥕",
 DATA_FILE = "club_members.json"
 CONFIG_FILE = "app_config.json"
 
-# 📸 정확히 검수된 53명 회원 전체 데이터 세트
+# 📸 땅콩 님 정보 추가 완료 (총 54명 기본 데이터 세트)
 RAW_DATA = [
     ("보리", "F", "86년생", "갈현동", "2025-03-24"),
     ("쥬니👑", "F", "85년생", "북가좌제2동", "2025-03-24"),
@@ -61,7 +61,8 @@ RAW_DATA = [
     ("우지", "M", "90년생", "역촌동", "2026-10-06"),
     ("호야", "M", "82년생", "구산동", "2026-10-11"),
     ("달콤달콤", "F", "87년생", "상수동", "2026-10-12"),
-    ("햇살가득", "M", "84년생", "응암동", "2026-10-13")
+    ("햇살가득", "M", "84년생", "응암동", "2026-10-13"),
+    ("땅콩", "F", "88년생", "응암동", "2026-10-14")
 ]
 
 # 기본 인터뷰 가이드 원문
@@ -141,7 +142,7 @@ def load_data():
         try:
             with open(DATA_FILE, "r", encoding="utf-8") as f:
                 d = json.load(f)
-                if len(d) == len(INITIAL_MEMBERS):
+                if d:  # 인원수 제한 없이 저장된 데이터가 존재하면 그대로 유지
                     return d
         except:
             pass
@@ -197,7 +198,7 @@ today = date.today()
 # [TAB 1] 회원 목록 (확인 & 수정 & 삭제 통합)
 with tab1:
     st.subheader("전체 회원 현황 및 관리")
-    if st.button("🔄 53명 전체 데이터 초기화/리셋", use_container_width=True):
+    if st.button("🔄 기본 명단으로 강제 초기화/리셋", use_container_width=True):
         save_data(INITIAL_MEMBERS)
         st.rerun()
 
@@ -218,7 +219,7 @@ with tab1:
     # 🟢 그린 왕관 운영진 최상단 배치
     items.sort(key=lambda x: 0 if x[1].get("운영진", False) else 1)
 
-    st.metric("총 회원 수", f"{len(items)} 명 (목표: 53명)")
+    st.metric("현재 총 회원 수", f"{len(items)} 명")
 
     for uid, info in items:
         ld_str = info.get("최근참석일", str(today))
@@ -339,7 +340,7 @@ with tab2:
         for uid, info, dp in over_list:
             st.warning(f"👤 **{uid}** ({info['지역']}) - 최근 참석일: {info.get('최근참석일','-')} (**{dp}일 지남**)")
 
-# [TAB 3] 회원 등록
+# [TAB 3] 회원 등록 (무제한 신규 회원 추가 가능)
 with tab3:
     st.subheader("신규 회원 등록")
     with st.form("add_form", clear_on_submit=True):
@@ -368,10 +369,10 @@ with tab3:
                     "운영진": is_admin_check, "운영진직책": new_role if is_admin_check else "해당없음"
                 }
                 save_data(members)
-                st.success("회원이 성공적으로 등록되었습니다!")
+                st.success(f"🎉 [{uid}] 회원이 성공적으로 등록되었습니다!")
                 st.rerun()
 
-# [TAB 4] 인터뷰 가이드 (정보수정 버튼 추가)
+# [TAB 4] 인터뷰 가이드
 with tab4:
     st.subheader("💬 신규 회원 가입 인터뷰 가이드")
     
@@ -395,7 +396,7 @@ with tab4:
                 st.success("인터뷰 가이드 문구가 성공적으로 저장되었습니다!")
                 st.rerun()
 
-# [TAB 5] 공지 게시판 (정보수정 버튼 추가)
+# [TAB 5] 공지 게시판
 with tab5:
     st.subheader("📢운영진 공지 게시판")
     
