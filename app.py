@@ -108,7 +108,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --- 상단 헤더 ---
-st.markdown('<div class="custom-title">🥕 당근 모임 회원 관리</div>', unsafe_allow_html=True)
+st.markdown('<div class="custom-title">🥕3040솔로메이트 어드민🥕</div>', unsafe_allow_html=True)
 st.markdown('<div class="custom-caption">초보 운영자를 위한 직관적인 회원 관리 도구</div>', unsafe_allow_html=True)
 
 tab1, tab2, tab3 = st.tabs(["📋 회원 목록", "➕ 회원 등록", "⚙️ 참석 관리"])
