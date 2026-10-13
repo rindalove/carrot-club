@@ -1,9 +1,3 @@
-출생년도(예: 85년생)를 기록하고 회원 목록 및 카드에서 직관적으로 확인할 수 있도록 수정했습니다!
-
-📄 수정된 전체 코드 (app.py)
-GitHub의 app.py 파일로 가셔서 기존 코드를 모두 지우고, 아래 전체 코드로 전체 덮어쓰기(복사+붙여넣기) 후 저장(Commit changes)해 주세요!
-
-Python
 import streamlit as st
 import json
 import os
