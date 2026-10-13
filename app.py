@@ -6,11 +6,11 @@ st.set_page_config(page_title="3040솔로메이트 어드민", page_icon="🥕",
 
 DATA_FILE = "club_members.json"
 
-# 📸 정확히 검수된 53명 회원 전체 데이터 세트
+# 📸 정확히 검수된 53명 회원 전체 데이터 세트 (바론이, 보리 왕관 아이콘 제거 완료)
 RAW_DATA = [
-    ("보리👑", "F", "86년생", "갈현동", "2025-03-24"),
+    ("보리", "F", "86년생", "갈현동", "2025-03-24"),
     ("쥬니👑", "F", "85년생", "북가좌제2동", "2025-03-24"),
-    ("바론이👑", "F", "83년생", "신사동", "2025-03-26"),
+    ("바론이", "F", "83년생", "신사동", "2025-03-26"),
     ("이예💎", "F", "89년생", "불광제2동", "2025-05-02"),
     ("쟈연", "F", "90년생", "녹번동", "2025-05-27"),
     ("윤철", "M", "84년생", "북가좌동", "2025-07-06"),
@@ -63,7 +63,8 @@ RAW_DATA = [
     ("햇살가득", "M", "84년생", "응암동", "2026-10-13")
 ]
 
-ADMIN_MEMBERS = ["바론이👑", "보리👑", "쥬니👑", "개동👑"]
+# 운영진 명단 (바론이, 보리, 쥬니, 개동)
+ADMIN_MEMBERS = ["바론이", "보리", "쥬니👑", "개동👑"]
 
 INITIAL_MEMBERS = {}
 for u, g, b, r, j in RAW_DATA:
@@ -91,7 +92,7 @@ def save_data(d):
 
 members = load_data()
 
-# 커플 매칭
+# 커플 매칭 (쥬니👑 & 개동👑 커플 지정 및 기타 커플 이모티콘 매칭)
 couple_dict = {
     "쥬니👑": ["개동👑"],
     "개동👑": ["쥬니👑"]
@@ -109,9 +110,9 @@ for emo, uids in emoji_map.items():
             partner = [other for other in uids if other != u]
             couple_dict[u] = partner
 
-st.markdown("<h3 style='color:#ff6f0f; margin-bottom:5px;'>🩷3040솔로메이트 어드민🩵</h3>", unsafe_allow_html=True)
+st.markdown("<h3 style='color:#ff6f0f; margin-bottom:5px;'>🥕 3040솔로메이트 어드민</h3>", unsafe_allow_html=True)
 
-# 6개 메뉴 탭 구성 (인터뷰 가이드 탭 추가)
+# 6개 메뉴 탭 구성
 tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["📋 회원 목록", "💬 가이드", "📊 한달 참석", "✏️ 정보 수정", "➕ 회원 등록", "⚙️ 참석 갱신"])
 today = date.today()
 
@@ -136,7 +137,7 @@ with tab1:
     else:
         items.sort(key=lambda x: x[0])
 
-    # 🟢 그린색 왕관 운영진 최상단 배치
+    # 🟢 그린 왕관 운영진 최상단 배치
     items.sort(key=lambda x: 0 if x[1].get("운영진", False) else 1)
 
     st.metric("총 회원 수", f"{len(items)} 명 (목표: 53명)")
@@ -152,7 +153,7 @@ with tab1:
         
         role_badges = []
         if info.get("운영진", False):
-            role_badges.append("🟢 운영진") # 그린색 왕관 느낌의 표기
+            role_badges.append("🟢 운영진")
         if uid in couple_dict:
             role_badges.append(f"👩‍❤️‍👨 커플 ({', '.join(couple_dict[uid])})")
         
