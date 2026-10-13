@@ -5,6 +5,7 @@ from datetime import datetime, date
 st.set_page_config(page_title="3040솔로메이트 어드민", page_icon="🥕", layout="centered")
 
 DATA_FILE = "club_members.json"
+CONFIG_FILE = "app_config.json"
 
 # 📸 정확히 검수된 53명 회원 전체 데이터 세트
 RAW_DATA = [
@@ -63,7 +64,61 @@ RAW_DATA = [
     ("햇살가득", "M", "84년생", "응암동", "2026-10-13")
 ]
 
-# 운영진 직책 지정
+# 기본 인터뷰 가이드 원문
+DEFAULT_GUIDE = """🩷솔로메이트 친목모임🩵
+안녕하세요 00님☺️
+가입신청하셔서 인사드립니다!
+
+가입전 절차로 몇가지 여쭤볼께요~😺
+✅️기혼,돌싱,애인있음에 해당안되시죠?
+✅️현재 서대문,은평,마포구
+동네모임을 여러곳 가입하여
+활동중이신가요
+
+
+네 그러시군요 ~
+저희모임같은 동네친구모임을
+여러군데 가입하여 활동하시는분을
+지양하고 있어서 여쭤봤어요😿
+
+저희는 소속감있게 친목중심의
+모임만들기를 추구하고 있습니당 ^-^
+( 친목중심으로 취미활동 소소하게
+같이 할 모임을 찾으신다면
+저희모임이랑 잘 맞으실꺼예요~ )
+
+다만 다른 모임 가입하셨어도 
+그쪽으로만 기울지않고😁
+저희모임활동 꾸준히 활동 잘 해주신다면 가입 가능하셔요☘️☺️
+
+(⭐️혹시나 다른 모임 일정과 하루안에 두탕? 스케줄 잡는 일은 없으셨음 해요
+생각보다 매너없는분들이 많다보니
+염려되어 더 미리미리 말씀드리게 되는점이해 부탁드려요🙏)
+
+
+그리고 저희는 적어도 ✅️한달에 한번
+오프라인벙에 ✅️필수 참여하시는게 멤버유지조건인데 가능하실까요?
+
+✅️혹시 주말에 쉬시는 직업이신가요?
+평일에는 퇴근후 저녁식사벙(간술,논알
+콜) 등이 가끔 열리구요~
+주말에는 맛집,취미벙들이 열리고
+금,토,일요일에 열리는 경우가 훨씬 많아서요☺️
+
+그럼 저희 🩷솔로메이트 친목모임🩵 활동 도전해보시겠어요? ^-^ 
+지금 닉네임 수정하시면 승인해 드릴께요!
+
+닉네임 양식: 이름(성별/생년연도/지역)
+- 예시: 바론이(여/83/새절)
+
+입장하시고 닉네임 수정하시고 가입 인사 부탁 드려요 😊"""
+
+DEFAULT_NOTICE = """📢 3040솔로메이트 모임 공지사항
+
+1. 한 달(30일)에 적어도 1회 이상 오프라인 모임 참석은 필수입니다.
+2. 닉네임 양식을 반드시 준수해 주세요 (예: 바론이(여/83/새절)).
+3. 매너 있는 소통과 모임 참여를 당부드립니다!"""
+
 ADMIN_ROLES = {
     "쥬니👑": "방장",
     "바론이": "부방장",
@@ -97,7 +152,23 @@ def save_data(d):
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(d, f, ensure_ascii=False, indent=4)
 
+def load_config():
+    if os.path.exists(CONFIG_FILE):
+        try:
+            with open(CONFIG_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except:
+            pass
+    cfg = {"guide": DEFAULT_GUIDE, "notice": DEFAULT_NOTICE}
+    save_config(cfg)
+    return cfg
+
+def save_config(cfg):
+    with open(CONFIG_FILE, "w", encoding="utf-8") as f:
+        json.dump(cfg, f, ensure_ascii=False, indent=4)
+
 members = load_data()
+app_config = load_config()
 
 # 커플 매칭
 couple_dict = {
@@ -119,8 +190,8 @@ for emo, uids in emoji_map.items():
 
 st.markdown("<h3 style='color:#ff6f0f; margin-bottom:5px;'>🩷3040솔로메이트 어드민🩵</h3>", unsafe_allow_html=True)
 
-# 요청하신 탭 순서로 재배치: [회원 목록, 한달 참석, 회원 등록, 인터뷰 가이드]
-tab1, tab2, tab3, tab4 = st.tabs(["📋 회원 목록", "📊 한달 참석", "➕ 회원 등록", "💬 인터뷰 가이드"])
+# 5개 카테고리 메뉴 탭
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["📋 회원 목록", "📊 한달 참석", "➕ 회원 등록", "💬 인터뷰 가이드", "📢 공지 게시판"])
 today = date.today()
 
 # [TAB 1] 회원 목록 (확인 & 수정 & 삭제 통합)
@@ -175,7 +246,6 @@ with tab1:
             
             st.write("---")
             
-            # 정보 수정 폼 접기/열기 버튼
             edit_key = f"show_edit_{uid}"
             if edit_key not in st.session_state:
                 st.session_state[edit_key] = False
@@ -192,9 +262,8 @@ with tab1:
                     st.success(f"[{uid}] 회원이 삭제되었습니다.")
                     st.rerun()
 
-            # 정보 수정 폼 영역
             if st.session_state[edit_key]:
-                st.info(f"⚙️ **{uid}** 회원 정보 수정")
+                st.info(f"⚙️ **{uid}** 회원 정보수정")
                 with st.form(key=f"form_edit_{uid}"):
                     fe_gender = st.radio("성별", ["F", "M"], index=0 if info["성별"] == "F" else 1, horizontal=True)
                     fe_birth = st.text_input("출생년도", value=info.get("출생년도", ""))
@@ -302,57 +371,50 @@ with tab3:
                 st.success("회원이 성공적으로 등록되었습니다!")
                 st.rerun()
 
-# [TAB 4] 인터뷰 가이드
+# [TAB 4] 인터뷰 가이드 (정보수정 버튼 추가)
 with tab4:
     st.subheader("💬 신규 회원 가입 인터뷰 가이드")
-    st.info("💡 아래 문구를 복사해서 신규 가입 신청자에게 안내 메시지로 보내세요.")
     
-    guide_text = """🩷솔로메이트 친목모임🩵
-안녕하세요 00님☺️
-가입신청하셔서 인사드립니다!
+    if "edit_guide" not in st.session_state:
+        st.session_state["edit_guide"] = False
+        
+    st.info("💡 아래 문구를 복사해서 신규 가입 신청자에게 안내 메시지로 보내세요.")
+    st.code(app_config.get("guide", DEFAULT_GUIDE), language=None)
+    
+    if st.button("✏️ 정보수정", key="btn_edit_guide"):
+        st.session_state["edit_guide"] = not st.session_state["edit_guide"]
+        st.rerun()
+        
+    if st.session_state["edit_guide"]:
+        with st.form("form_guide_edit"):
+            new_guide = st.text_area("인터뷰 가이드 문구 내용 수정", value=app_config.get("guide", DEFAULT_GUIDE), height=350)
+            if st.form_submit_button("💾 가이드 문구 저장"):
+                app_config["guide"] = new_guide
+                save_config(app_config)
+                st.session_state["edit_guide"] = False
+                st.success("인터뷰 가이드 문구가 성공적으로 저장되었습니다!")
+                st.rerun()
 
-가입전 절차로 몇가지 여쭤볼께요~😺
-✅️기혼,돌싱,애인있음에 해당안되시죠?
-✅️현재 서대문,은평,마포구
-동네모임을 여러곳 가입하여
-활동중이신가요
-
-
-네 그러시군요 ~
-저희모임같은 동네친구모임을
-여러군데 가입하여 활동하시는분을
-지양하고 있어서 여쭤봤어요😿
-
-저희는 소속감있게 친목중심의
-모임만들기를 추구하고 있습니당 ^-^
-( 친목중심으로 취미활동 소소하게
-같이 할 모임을 찾으신다면
-저희모임이랑 잘 맞으실꺼예요~ )
-
-다만 다른 모임 가입하셨어도 
-그쪽으로만 기울지않고😁
-저희모임활동 꾸준히 활동 잘 해주신다면 가입 가능하셔요☘️☺️
-
-(⭐️혹시나 다른 모임 일정과 하루안에 두탕? 스케줄 잡는 일은 없으셨음 해요
-생각보다 매너없는분들이 많다보니
-염려되어 더 미리미리 말씀드리게 되는점이해 부탁드려요🙏)
-
-
-그리고 저희는 적어도 ✅️한달에 한번
-오프라인벙에 ✅️필수 참여하시는게 멤버유지조건인데 가능하실까요?
-
-✅️혹시 주말에 쉬시는 직업이신가요?
-평일에는 퇴근후 저녁식사벙(간술,논알
-콜) 등이 가끔 열리구요~
-주말에는 맛집,취미벙들이 열리고
-금,토,일요일에 열리는 경우가 훨씬 많아서요☺️
-
-그럼 저희 🩷솔로메이트 친목모임🩵 활동 도전해보시겠어요? ^-^ 
-지금 닉네임 수정하시면 승인해 드릴께요!
-
-닉네임 양식: 이름(성별/생년연도/지역)
-- 예시: 바론이(여/83/새절)
-
-입장하시고 닉네임 수정하시고 가입 인사 부탁 드려요 😊"""
-
-    st.code(guide_text, language=None)
+# [TAB 5] 공지 게시판 (정보수정 버튼 추가)
+with tab5:
+    st.subheader("📢운영진 공지 게시판")
+    
+    if "edit_notice" not in st.session_state:
+        st.session_state["edit_notice"] = False
+        
+    st.info("📌 모임 주요 공지사항 및 운영 지침입니다.")
+    st.code(app_config.get("notice", DEFAULT_NOTICE), language=None)
+    
+    if st.button("✏️ 정보수정", key="btn_edit_notice"):
+        st.session_state["edit_notice"] = not st.session_state["edit_notice"]
+        st.rerun()
+        
+    if st.session_state["edit_notice"]:
+        with st.form("form_notice_edit"):
+            new_notice = st.text_area("공지 게시판 내용 입력 및 수정", value=app_config.get("notice", DEFAULT_NOTICE), height=200)
+            if st.form_submit_button("💾 공지사항 저장"):
+                app_config["notice"] = new_notice
+                save_config(app_config)
+                st.session_state["edit_notice"] = False
+                st.success("공지 게시판 내용이 성공적으로 저장되었습니다!")
+                st.rerun()
