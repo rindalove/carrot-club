@@ -1,3 +1,9 @@
+출생년도(예: 85년생)를 기록하고 회원 목록 및 카드에서 직관적으로 확인할 수 있도록 수정했습니다!
+
+📄 수정된 전체 코드 (app.py)
+GitHub의 app.py 파일로 가셔서 기존 코드를 모두 지우고, 아래 전체 코드로 전체 덮어쓰기(복사+붙여넣기) 후 저장(Commit changes)해 주세요!
+
+Python
 import streamlit as st
 import json
 import os
@@ -36,13 +42,15 @@ with tab1:
     if not members:
         st.info("아직 등록된 회원이 없습니다. '회원 등록' 탭에서 첫 회원을 추가해보세요!")
     else:
-        search_query = st.text_input("🔍 아이디 또는 지역 검색", placeholder="검색어를 입력하세요...")
+        search_query = st.text_input("🔍 아이디, 지역 또는 출생년도 검색", placeholder="검색어를 입력하세요...")
         
         filtered_members = members
         if search_query:
             filtered_members = {
                 uid: info for uid, info in members.items()
-                if search_query.lower() in uid.lower() or search_query in info['지역']
+                if search_query.lower() in uid.lower() 
+                or search_query in info.get('지역', '')
+                or search_query in info.get('출생년도', '')
             }
 
         st.metric(label="총 회원 수", value=f"{len(filtered_members)} 명")
@@ -59,10 +67,12 @@ with tab1:
                 count_status = f"✅ D+{days_passed}일 (정상)"
 
             badge = "✅ 참석" if info.get("월1회_참석여부") == "참석" else "❌ 미참석"
+            birth_year = info.get("출생년도", "미입력")
             
-            with st.expander(f"👤 {uid} ({info['성별']}) | {badge} | {count_status}"):
+            with st.expander(f"👤 {uid} ({info['성별']} / {birth_year}) | {badge} | {count_status}"):
                 col1, col2 = st.columns(2)
                 with col1:
+                    st.write(f"**🎂 출생년도:** {birth_year}")
                     st.write(f"**📍 지역:** {info['지역']}")
                     st.write(f"**✨ 외모:** {info['외모']}")
                     st.write(f"**📅 최근 참석일:** {last_date_str}")
@@ -85,6 +95,7 @@ with tab2:
     with st.form("add_member_form", clear_on_submit=True):
         user_id = st.text_input("아이디 (필수)", placeholder="예: 당근이123")
         gender = st.radio("성별", ["F", "M"], horizontal=True)
+        birth_year_input = st.text_input("출생년도", placeholder="예: 85년생 또는 1985")
         region = st.text_input("지역", placeholder="예: 강남구 역삼동")
         
         attendance = st.radio("이번 달 참석 여부", ["참석", "미참석"], horizontal=True)
@@ -105,8 +116,10 @@ with tab2:
             elif user_id in members:
                 st.error("이미 존재하는 아이디입니다.")
             else:
+                formatted_birth = birth_year_input.strip() if birth_year_input.strip() else "미입력"
                 members[user_id] = {
                     "성별": gender,
+                    "출생년도": formatted_birth,
                     "지역": region,
                     "월1회_참석여부": attendance,
                     "최근참석일": str(attend_date),
