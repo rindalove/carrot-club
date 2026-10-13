@@ -6,7 +6,7 @@ st.set_page_config(page_title="3040솔로메이트 어드민", page_icon="🥕",
 
 DATA_FILE = "club_members.json"
 
-# 📸 정확히 검수된 53명 회원 전체 데이터 세트 (바론이, 보리 왕관 아이콘 제거 완료)
+# 📸 정확히 검수된 53명 회원 전체 데이터 세트
 RAW_DATA = [
     ("보리", "F", "86년생", "갈현동", "2025-03-24"),
     ("쥬니👑", "F", "85년생", "북가좌제2동", "2025-03-24"),
@@ -63,15 +63,22 @@ RAW_DATA = [
     ("햇살가득", "M", "84년생", "응암동", "2026-10-13")
 ]
 
-# 운영진 명단 (바론이, 보리, 쥬니, 개동)
-ADMIN_MEMBERS = ["바론이", "보리", "쥬니👑", "개동👑"]
+# 운영진 호칭 상세 지정
+ADMIN_ROLES = {
+    "쥬니👑": "방장",
+    "바론이": "부방장",
+    "개동👑": "부방장",
+    "보리": "부방장"
+}
 
 INITIAL_MEMBERS = {}
 for u, g, b, r, j in RAW_DATA:
+    role = ADMIN_ROLES.get(u, "해당없음")
     INITIAL_MEMBERS[u] = {
         "성별": g, "출생년도": b, "지역": r, "가입일자": j, 
         "월1회_참석여부": "미참석", "최근참석일": j, "활동특징": "-", 
-        "외모": "중", "성격": "중", "운영진": (u in ADMIN_MEMBERS)
+        "외모": "중", "성격": "중", "운영진": (u in ADMIN_ROLES),
+        "운영진직책": role
     }
 
 def load_data():
@@ -110,7 +117,8 @@ for emo, uids in emoji_map.items():
             partner = [other for other in uids if other != u]
             couple_dict[u] = partner
 
-st.markdown("<h3 style='color:#ff6f0f; margin-bottom:5px;'>🥕 3040솔로메이트 어드민</h3>", unsafe_allow_html=True)
+# 🩷3040솔로메이트 어드민🩵 타이틀 수정
+st.markdown("<h3 style='color:#ff6f0f; margin-bottom:5px;'>🩷3040솔로메이트 어드민🩵</h3>", unsafe_allow_html=True)
 
 # 6개 메뉴 탭 구성
 tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["📋 회원 목록", "💬 가이드", "📊 한달 참석", "✏️ 정보 수정", "➕ 회원 등록", "⚙️ 참석 갱신"])
@@ -153,7 +161,8 @@ with tab1:
         
         role_badges = []
         if info.get("운영진", False):
-            role_badges.append("🟢 운영진")
+            role_title = info.get("운영진직책", "운영진")
+            role_badges.append(f"🟢 운영진 ({role_title})")
         if uid in couple_dict:
             role_badges.append(f"👩‍❤️‍👨 커플 ({', '.join(couple_dict[uid])})")
         
@@ -286,7 +295,13 @@ with tab4:
                 curr_att_date = today
             e_att_date = st.date_input("최근 참석 날짜", value=curr_att_date)
             
-            e_is_admin = st.checkbox("🟢 그린 왕관 운영진 여부", value=e_info.get("운영진", False))
+            e_is_admin = st.checkbox("🟢 운영진 권한 부여", value=e_info.get("운영진", False))
+            
+            curr_role = e_info.get("운영진직책", "해당없음")
+            role_options = ["방장", "부방장", "운영진", "해당없음"]
+            role_idx = role_options.index(curr_role) if curr_role in role_options else 3
+            e_role = st.selectbox("운영진 직책", role_options, index=role_idx)
+            
             e_att_status = st.radio("월1회 참석 상태", ["참석", "미참석"], index=0 if e_info.get("월1회_참석여부") == "참석" else 1, horizontal=True)
             e_feature = st.text_area("활동 특징", value=e_info.get("활동특징", "-"))
             
@@ -298,7 +313,8 @@ with tab4:
                     "성별": e_gender, "출생년도": e_birth, "지역": e_region,
                     "가입일자": str(e_join), "최근참석일": str(e_att_date),
                     "월1회_참석여부": e_att_status, "활동특징": e_feature,
-                    "외모": e_looks, "성격": e_personality, "운영진": e_is_admin
+                    "외모": e_looks, "성격": e_personality, 
+                    "운영진": e_is_admin, "운영진직책": e_role if e_is_admin else "해당없음"
                 }
                 save_data(members)
                 st.success(f"[{edit_uid}] 회원의 정보가 수정되었습니다!")
@@ -313,7 +329,8 @@ with tab5:
         by = st.text_input("출생년도 (예: 85년생)")
         reg = st.text_input("지역")
         jd = st.date_input("가입일자", value=today)
-        is_admin_check = st.checkbox("🟢 그린 왕관 운영진 권한 부여")
+        is_admin_check = st.checkbox("🟢 운영진 권한 부여")
+        new_role = st.selectbox("운영진 직책", ["부방장", "방장", "운영진"])
         att = st.radio("참석여부", ["참석", "미참석"], horizontal=True)
         feat = st.text_area("특징", value="-")
         lk = st.select_slider("외모", ["하", "중", "상"], value="중")
@@ -329,7 +346,7 @@ with tab5:
                     "성별": gen, "출생년도": by or "미참석", "지역": reg, 
                     "가입일자": str(jd), "월1회_참석여부": att, 
                     "최근참석일": str(today), "활동특징": feat, "외모": lk, "성격": ps,
-                    "운영진": is_admin_check
+                    "운영진": is_admin_check, "운영진직책": new_role if is_admin_check else "해당없음"
                 }
                 save_data(members)
                 st.success("회원이 성공적으로 등록되었습니다!")
