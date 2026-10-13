@@ -3,7 +3,7 @@ import json
 import os
 from datetime import datetime, date
 
-st.set_page_config(page_title="🥕 3040 솔로메이트 회원관리", page_icon="🥕", layout="centered")
+st.set_page_config(page_title="🥕 당근 모임 관리", page_icon="🥕", layout="centered")
 
 DATA_FILE = "club_members.json"
 
@@ -22,8 +22,32 @@ def save_data(data):
 
 members = load_data()
 
-st.title("🥕3040솔로메이트")
-st.caption("운영진을 위한 직관적인 회원 관리 도구")
+# --- Custom CSS (글씨 크기 및 스타일 조정) ---
+st.markdown("""
+    <style>
+    /* 커스텀 앱 제목 글씨 크기 조정 (기존 st.title보다 아담하고 보기 좋게) */
+    .custom-title {
+        font-size: 24px !important;
+        font-weight: bold;
+        color: #ff6f0f; /* 당근 상징 주황색 */
+        margin-bottom: 2px;
+    }
+    .custom-caption {
+        font-size: 13px;
+        color: #666666;
+        margin-bottom: 15px;
+    }
+    /* 탭 글씨 크기 조정 */
+    button[data-baseweb="tab"] {
+        font-size: 15px !important;
+        font-weight: 600;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# --- 앱 상단 헤더 ---
+st.markdown('<div class="custom-title">🥕 당근 모임 회원 관리</div>', unsafe_allow_html=True)
+st.markdown('<div class="custom-caption">초보 운영자를 위한 직관적인 회원 관리 도구</div>', unsafe_allow_html=True)
 
 tab1, tab2, tab3 = st.tabs(["📋 회원 목록", "➕ 회원 등록", "⚙️ 참석 관리"])
 
