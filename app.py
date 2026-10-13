@@ -63,7 +63,7 @@ RAW_DATA = [
     ("햇살가득", "M", "84년생", "응암동", "2026-10-13")
 ]
 
-# 운영진 호칭 상세 지정
+# 운영진 직책 지정
 ADMIN_ROLES = {
     "쥬니👑": "방장",
     "바론이": "부방장",
@@ -117,7 +117,6 @@ for emo, uids in emoji_map.items():
             partner = [other for other in uids if other != u]
             couple_dict[u] = partner
 
-# 🩷3040솔로메이트 어드민🩵 타이틀 수정
 st.markdown("<h3 style='color:#ff6f0f; margin-bottom:5px;'>🩷3040솔로메이트 어드민🩵</h3>", unsafe_allow_html=True)
 
 # 6개 메뉴 탭 구성
@@ -162,7 +161,7 @@ with tab1:
         role_badges = []
         if info.get("운영진", False):
             role_title = info.get("운영진직책", "운영진")
-            role_badges.append(f"🟢 운영진 ({role_title})")
+            role_badges.append(f"🟢 {role_title}")
         if uid in couple_dict:
             role_badges.append(f"👩‍❤️‍👨 커플 ({', '.join(couple_dict[uid])})")
         
