@@ -109,10 +109,10 @@ for emo, uids in emoji_map.items():
             partner = [other for other in uids if other != u]
             couple_dict[u] = partner
 
-st.markdown("<h3 style='color:#ff6f0f; margin-bottom:5px;'>🥕 3040솔로메이트 어드민</h3>", unsafe_allow_html=True)
+st.markdown("<h3 style='color:#ff6f0f; margin-bottom:5px;'>🩷3040솔로메이트 어드민🩵</h3>", unsafe_allow_html=True)
 
-# 5개 메뉴 탭 구성
-tab1, tab2, tab3, tab4, tab5 = st.tabs(["📋 회원 목록", "📊 한달 참석 카운팅", "✏️ 회원정보 수정", "➕ 회원 등록", "⚙️ 참석 갱신"])
+# 6개 메뉴 탭 구성 (인터뷰 가이드 탭 추가)
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["📋 회원 목록", "💬 가이드", "📊 한달 참석", "✏️ 정보 수정", "➕ 회원 등록", "⚙️ 참석 갱신"])
 today = date.today()
 
 # [TAB 1] 회원 목록
@@ -129,7 +129,6 @@ with tab1:
     filtered = {u: i for u, i in members.items() if not sq or sq.lower() in u.lower() or sq in i.get('지역','') or sq in i.get('출생년도','')}
     items = list(filtered.items())
 
-    # 기본 정렬
     if so == "가입일 최신순":
         items.sort(key=lambda x: x[1].get("가입일자", ""), reverse=True)
     elif so == "가입일 오래된순":
@@ -137,7 +136,7 @@ with tab1:
     else:
         items.sort(key=lambda x: x[0])
 
-    # 👑 운영진 최상단 배치 (운영진을 우선 배치하되 그 내부에서도 정렬 조건 유지)
+    # 🟢 그린색 왕관 운영진 최상단 배치
     items.sort(key=lambda x: 0 if x[1].get("운영진", False) else 1)
 
     st.metric("총 회원 수", f"{len(items)} 명 (목표: 53명)")
@@ -153,7 +152,7 @@ with tab1:
         
         role_badges = []
         if info.get("운영진", False):
-            role_badges.append("👑 운영진")
+            role_badges.append("🟢 운영진") # 그린색 왕관 느낌의 표기
         if uid in couple_dict:
             role_badges.append(f"👩‍❤️‍👨 커플 ({', '.join(couple_dict[uid])})")
         
@@ -169,8 +168,63 @@ with tab1:
                 save_data(members)
                 st.rerun()
 
-# [TAB 2] 한달 참석 카운팅
+# [TAB 2] 신규 회원 인터뷰 가이드
 with tab2:
+    st.subheader("💬 신규 회원 가입 인터뷰 가이드")
+    st.info("💡 아래 문구를 복사해서 신규 가입 신청자에게 안내 메시지로 보내세요.")
+    
+    guide_text = """🩷솔로메이트 친목모임🩵
+안녕하세요 00님☺️
+가입신청하셔서 인사드립니다!
+
+가입전 절차로 몇가지 여쭤볼께요~😺
+✅️기혼,돌싱,애인있음에 해당안되시죠?
+✅️현재 서대문,은평,마포구
+동네모임을 여러곳 가입하여
+활동중이신가요
+
+
+네 그러시군요 ~
+저희모임같은 동네친구모임을
+여러군데 가입하여 활동하시는분을
+지양하고 있어서 여쭤봤어요😿
+
+저희는 소속감있게 친목중심의
+모임만들기를 추구하고 있습니당 ^-^
+( 친목중심으로 취미활동 소소하게
+같이 할 모임을 찾으신다면
+저희모임이랑 잘 맞으실꺼예요~ )
+
+다만 다른 모임 가입하셨어도 
+그쪽으로만 기울지않고😁
+저희모임활동 꾸준히 활동 잘 해주신다면 가입 가능하셔요☘️☺️
+
+(⭐️혹시나 다른 모임 일정과 하루안에 두탕? 스케줄 잡는 일은 없으셨음 해요
+생각보다 매너없는분들이 많다보니
+염려되어 더 미리미리 말씀드리게 되는점이해 부탁드려요🙏)
+
+
+그리고 저희는 적어도 ✅️한달에 한번
+오프라인벙에 ✅️필수 참여하시는게 멤버유지조건인데 가능하실까요?
+
+✅️혹시 주말에 쉬시는 직업이신가요?
+평일에는 퇴근후 저녁식사벙(간술,논알
+콜) 등이 가끔 열리구요~
+주말에는 맛집,취미벙들이 열리고
+금,토,일요일에 열리는 경우가 훨씬 많아서요☺️
+
+그럼 저희 🩷솔로메이트 친목모임🩵 활동 도전해보시겠어요? ^-^ 
+지금 닉네임 수정하시면 승인해 드릴께요!
+
+닉네임 양식: 이름(성별/생년연도/지역)
+- 예시: 바론이(여/83/새절)
+
+입장하시고 닉네임 수정하시고 가입 인사 부탁 드려요 😊"""
+
+    st.code(guide_text, language=None)
+
+# [TAB 3] 한달 참석 카운팅
+with tab3:
     st.subheader("📊 한 달(30일) 참석 현황 분석")
     
     attended_list = []
@@ -205,8 +259,8 @@ with tab2:
         for uid, info, dp in over_list:
             st.warning(f"👤 **{uid}** ({info['지역']}) - 최근 참석일: {info.get('최근참석일','-')} (**{dp}일 지남**)")
 
-# [TAB 3] 회원 정보 수정
-with tab3:
+# [TAB 4] 회원 정보 수정
+with tab4:
     st.subheader("✏️ 회원 정보 개별 수정")
     if members:
         edit_uid = st.selectbox("수정할 회원 선택", list(members.keys()), key="edit_select")
@@ -231,7 +285,7 @@ with tab3:
                 curr_att_date = today
             e_att_date = st.date_input("최근 참석 날짜", value=curr_att_date)
             
-            e_is_admin = st.checkbox("👑 운영진 여부", value=e_info.get("운영진", False))
+            e_is_admin = st.checkbox("🟢 그린 왕관 운영진 여부", value=e_info.get("운영진", False))
             e_att_status = st.radio("월1회 참석 상태", ["참석", "미참석"], index=0 if e_info.get("월1회_참석여부") == "참석" else 1, horizontal=True)
             e_feature = st.text_area("활동 특징", value=e_info.get("활동특징", "-"))
             
@@ -249,8 +303,8 @@ with tab3:
                 st.success(f"[{edit_uid}] 회원의 정보가 수정되었습니다!")
                 st.rerun()
 
-# [TAB 4] 회원 등록
-with tab4:
+# [TAB 5] 회원 등록
+with tab5:
     st.subheader("신규 회원 등록")
     with st.form("add_form", clear_on_submit=True):
         uid = st.text_input("아이디 (필수)")
@@ -258,7 +312,7 @@ with tab4:
         by = st.text_input("출생년도 (예: 85년생)")
         reg = st.text_input("지역")
         jd = st.date_input("가입일자", value=today)
-        is_admin_check = st.checkbox("👑 운영진 권한 부여")
+        is_admin_check = st.checkbox("🟢 그린 왕관 운영진 권한 부여")
         att = st.radio("참석여부", ["참석", "미참석"], horizontal=True)
         feat = st.text_area("특징", value="-")
         lk = st.select_slider("외모", ["하", "중", "상"], value="중")
@@ -280,8 +334,8 @@ with tab4:
                 st.success("회원이 성공적으로 등록되었습니다!")
                 st.rerun()
 
-# [TAB 5] 참석 갱신
-with tab5:
+# [TAB 6] 참석 갱신
+with tab6:
     st.subheader("빠른 참석 상태 갱신")
     if members:
         t_uid = st.selectbox("회원 선택", list(members.keys()), key="quick_att_select")
