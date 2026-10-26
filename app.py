@@ -123,6 +123,7 @@ def save_config(cfg):
 members = load_data()
 app_config = load_config()
 
+# 커플 자동 매칭 (이모지 기반 및 수동 설정)
 couple_dict = {
     "쥬니👑": ["개동👑"],
     "개동👑": ["쥬니👑"]
@@ -142,7 +143,7 @@ for emo, uids in emoji_map.items():
 
 st.markdown("<h3 style='color:#ff6f0f; margin-bottom:5px;'>🩷3040솔로메이트어드민🩵</h3>", unsafe_allow_html=True)
 
-# 요청하신 상단 메뉴명 및 아이콘 적용 (4개 메뉴)
+# 메인 상단 메뉴명 및 아이콘 적용
 tab1, tab2, tab3, tab4 = st.tabs(["📋 전체 회원", "📊 한달 참석", "➕ 신규 회원 등록", "📢 공지사항"])
 today = date.today()
 
@@ -182,7 +183,7 @@ with tab1:
             role_title = info.get("운영진직책", "운영진")
             role_badges.append(f"🟢 {role_title}")
         if uid in couple_dict:
-            role_badges.append(f"👩‍❤️‍👨 커플")
+            role_badges.append(f"👩‍❤️‍👨 커플: {', '.join(couple_dict[uid])}")
         
         badge_str = f" | {' | '.join(role_badges)}" if role_badges else ""
         
@@ -190,7 +191,6 @@ with tab1:
             ca, cb = st.columns(2)
             
             # 요청하신 개인 정보 상세 내용 순서 반영
-            # 1. 지역, 2. 가입일자, 3. 최근 벙참여, 4. 경과일자, 5. 후기작성, 6. 외모, 7. 특징
             ca.write(f"**📍 지역:** {info['지역']}")
             ca.write(f"**📅 가입일자:** {info.get('가입일자','-')}")
             ca.write(f"**📌 최근 벙참여:** {ld_str}")
@@ -232,6 +232,7 @@ with tab1:
                     except: curr_j = today
                     fe_join = st.date_input("가입일자", value=curr_j)
 
+                    # 캘린더 현재 연도(2026년 등) 세팅 반영
                     try:
                         curr_a = datetime.strptime(info.get("최근참석일", str(today)), "%Y-%m-%d").date()
                     except: curr_a = today
