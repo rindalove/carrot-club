@@ -142,8 +142,8 @@ for emo, uids in emoji_map.items():
 
 st.markdown("<h3 style='color:#ff6f0f; margin-bottom:5px;'>🩷3040솔로메이트어드민🩵</h3>", unsafe_allow_html=True)
 
-# 메인 상단 메뉴명 수정 (4개 메뉴)
-tab1, tab2, tab3, tab4 = st.tabs(["전체 회원", "한달 참석", "신규 회원 등록", "공지"])
+# 요청하신 상단 메뉴명 및 아이콘 적용 (4개 메뉴)
+tab1, tab2, tab3, tab4 = st.tabs(["📋 전체 회원", "📊 한달 참석", "➕ 신규 회원 등록", "📢 공지사항"])
 today = date.today()
 
 # [TAB 1] 전체 회원
@@ -338,7 +338,7 @@ with tab3:
                 st.success(f"🎉 [{uid}] 회원이 성공적으로 등록되었습니다!")
                 st.rerun()
 
-# [TAB 4] 공지
+# [TAB 4] 공지사항
 with tab4:
     st.subheader("📢 공지사항")
     
