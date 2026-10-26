@@ -1,3 +1,4 @@
+Python
 import streamlit as st
 import json, os, re
 from datetime import datetime, date
@@ -411,4 +412,22 @@ with tab4:
 with tab5:
     st.subheader("📢 공지사항")
     
-    if "
+    if "edit_notice" not in st.session_state:
+        st.session_state["edit_notice"] = False
+        
+    st.info("📌 모임 주요 공지사항 및 운영 지침입니다.")
+    st.code(app_config.get("notice", DEFAULT_NOTICE), language=None)
+    
+    if st.button("✏️ 정보수정", key="btn_edit_notice"):
+        st.session_state["edit_notice"] = not st.session_state["edit_notice"]
+        st.rerun()
+        
+    if st.session_state["edit_notice"]:
+        with st.form("form_notice_edit"):
+            new_notice = st.text_area("공지 게시판 내용 입력 및 수정", value=app_config.get("notice", DEFAULT_NOTICE), height=200)
+            if st.form_submit_button("💾 공지사항 저장"):
+                app_config["notice"] = new_notice
+                save_config(app_config)
+                st.session_state["edit_notice"] = False
+                st.success("공지 게시판 내용이 성공적으로 저장되었습니다!")
+                st.rerun()
