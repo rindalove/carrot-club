@@ -1,4 +1,3 @@
-Python
 import streamlit as st
 import json, os, re
 from datetime import datetime, date
