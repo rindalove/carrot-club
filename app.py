@@ -1,4 +1,3 @@
-Python
 import streamlit as st
 import json, os, re
 from datetime import datetime, date
@@ -8,7 +7,7 @@ st.set_page_config(page_title="🩷3040솔로메이트어드민🩵", page_icon=
 DATA_FILE = "club_members.json"
 CONFIG_FILE = "app_config.json"
 
-# 📸 이미지 기반 검수 완료 회원 명단 (부이브이, 혀날도, 슈퍼홍, 리키 제외)
+# 📸 검수 완료 회원 명단 (부이브이, 혀날도, 슈퍼홍, 리키 제외)
 RAW_DATA = [
     ("보리", "F", "86년생", "갈현동", "2025-03-24"),
     ("쥬니👑", "F", "85년생", "북가좌제2동", "2025-03-24"),
@@ -189,6 +188,7 @@ for emo, uids in emoji_map.items():
             partner = [other for other in uids if other != u]
             couple_dict[u] = partner
 
+# 타이틀 적용
 st.markdown("<h3 style='color:#ff6f0f; margin-bottom:5px;'>🩷3040솔로메이트어드민🩵</h3>", unsafe_allow_html=True)
 
 tab1, tab2, tab3, tab4, tab5 = st.tabs(["📋 회원", "📊 참석", "➕ 등록", "💬 가이드", "📢 공지"])
