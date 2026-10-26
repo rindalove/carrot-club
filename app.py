@@ -7,7 +7,7 @@ st.set_page_config(page_title="🩷3040솔로메이트어드민🩵", page_icon=
 DATA_FILE = "club_members.json"
 CONFIG_FILE = "app_config.json"
 
-# 📸 이미지 기반 검수 완료 53명 실제 회원 명단
+# 📸 이미지 기반 검수 완료 회원 명단 (부이브이, 혀날도, 슈퍼홍, 리키 제외)
 RAW_DATA = [
     ("보리", "F", "86년생", "갈현동", "2025-03-24"),
     ("쥬니👑", "F", "85년생", "북가좌제2동", "2025-03-24"),
@@ -43,6 +43,7 @@ RAW_DATA = [
     ("은호", "F", "88년생", "상수동", "2026-08-02"),
     ("쩡히", "F", "86년생", "역촌동", "2026-08-13"),
     ("시계", "M", "88년생", "연남동", "2026-08-18"),
+    ("두나", "F", "89년생", "북가좌동", "2026-08-20"),
     ("땅콩", "M", "86년생", "북가좌제2동", "2026-08-29"),
     ("보미", "F", "85년생", "서교동", "2026-08-31"),
     ("서율", "M", "88년생", "가양제3동", "2026-09-04"),
@@ -138,7 +139,6 @@ def load_data():
             with open(DATA_FILE, "r", encoding="utf-8") as f:
                 d = json.load(f)
                 if isinstance(d, dict) and len(d) > 0:
-                    # 기존 데이터에 '후기작성여부'가 없는 경우 기본값 보완
                     for u in d:
                         if "후기작성여부" not in d[u]:
                             d[u]["후기작성여부"] = "미작성"
@@ -171,7 +171,6 @@ def save_config(cfg):
 members = load_data()
 app_config = load_config()
 
-# 커플 매칭
 couple_dict = {
     "쥬니👑": ["개동👑"],
     "개동👑": ["쥬니👑"]
@@ -191,7 +190,7 @@ for emo, uids in emoji_map.items():
 
 st.markdown("<h3 style='color:#ff6f0f; margin-bottom:5px;'>🩷3040솔로메이트어드민🩵</h3>", unsafe_allow_html=True)
 
-tab1, tab2, tab3, tab4, tab5 = st.tabs(["📋 회원 목록", "📊 한달 참석", "➕ 회원 등록", "💬 인터뷰 가이드", "📢 공지사항"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["📋 회원", "📊 참석", "➕ 등록", "💬 가이드", "📢 공지"])
 today = date.today()
 
 # [TAB 1] 회원 목록
@@ -199,20 +198,19 @@ with tab1:
     st.subheader("전체 회원 현황 및 관리")
 
     c1, c2 = st.columns([2, 1])
-    sq = c1.text_input("🔍 검색", placeholder="아이디/지역/출생년도")
-    so = c2.selectbox("정렬", ["가입일 최신순", "가입일 오래된순", "아이디순"])
+    sq = c1.text_input("🔍 검색", placeholder="이름/지역/출생")
+    so = c2.selectbox("정렬", ["가입 최신", "가입 오래된", "이름순"])
 
     filtered = {u: i for u, i in members.items() if not sq or sq.lower() in u.lower() or sq in i.get('지역','') or sq in i.get('출생년도','')}
     items = list(filtered.items())
 
-    if so == "가입일 최신순":
+    if so == "가입 최신":
         items.sort(key=lambda x: x[1].get("가입일자", ""), reverse=True)
-    elif so == "가입일 오래된순":
+    elif so == "가입 오래된":
         items.sort(key=lambda x: x[1].get("가입일자", ""))
     else:
         items.sort(key=lambda x: x[0])
 
-    # 🟢 그린 왕관 운영진 최상단 배치
     items.sort(key=lambda x: 0 if x[1].get("운영진", False) else 1)
 
     st.metric("현재 총 회원 수", f"{len(items)} 명")
@@ -231,23 +229,23 @@ with tab1:
             role_title = info.get("운영진직책", "운영진")
             role_badges.append(f"🟢 {role_title}")
         if uid in couple_dict:
-            role_badges.append(f"👩‍❤️‍👨 커플 ({', '.join(couple_dict[uid])})")
+            role_badges.append(f"👩‍❤️‍👨 커플")
         
         badge_str = f" | {' | '.join(role_badges)}" if role_badges else ""
         
-        with st.expander(f"👤 {uid} ({info['성별']}/{info.get('출생년도','미입력')}){badge_str} | 가입: {info.get('가입일자','-')}"):
+        with st.expander(f"👤 {uid} ({info['성별']}/{info.get('출생년도','미입력')}){badge_str}"):
             ca, cb = st.columns(2)
             
             ca.write(f"**📍 지역:** {info['지역']}")
             ca.write(f"**📅 가입일자:** {info.get('가입일자','-')}")
-            ca.write(f"**✨ 외모 평가:** {info.get('외모','중')}")
-            ca.write(f"**✍️ 후기 작성:** {info.get('후기작성여부','미작성')}")
+            ca.write(f"**✨ 외모:** {info.get('외모','중')}")
+            ca.write(f"**✍️ 후기:** {info.get('후기작성여부','미작성')}")
             
-            cb.write(f"**💖 성격 평가:** {info.get('성격','중')}")
-            cb.write(f"**⏳ 참석 경과:** {dp}일 ({st_txt})")
-            cb.write(f"**📌 최근 참석일:** {ld_str}")
+            cb.write(f"**💖 성격:** {info.get('성격','중')}")
+            cb.write(f"**⏳ 경과:** {dp}일 ({st_txt})")
+            cb.write(f"**📌 최근:** {ld_str}")
             
-            st.write(f"**📝 활동 특징:** {info.get('활동특징','-')}")
+            st.write(f"**📝 특징:** {info.get('활동특징','-')}")
             
             st.write("---")
             
@@ -315,13 +313,6 @@ with tab1:
                         st.success(f"[{uid}] 회원 정보 저장이 완료되었습니다!")
                         st.rerun()
 
-    st.write("---")
-    if st.button("🔄 기본 명단으로 강제 초기화/리셋", use_container_width=True):
-        init_d = get_initial_data()
-        save_data(init_d)
-        st.success("기본 명단으로 초기화되었습니다!")
-        st.rerun()
-
 # [TAB 2] 한달 참석
 with tab2:
     st.subheader("📊 한 달(30일) 참석 현황 분석")
@@ -346,9 +337,9 @@ with tab2:
             normal_list.append((uid, info, dp))
             
     m1, m2, m3 = st.columns(3)
-    m1.metric("이번달 참석 완료", f"{len(attended_list)} 명")
-    m2.metric("30일 이내 정상", f"{len(normal_list)} 명")
-    m3.metric("⚠️ 30일 초과 미참석", f"{len(over_list)} 명")
+    m1.metric("이번달 참석", f"{len(attended_list)}명")
+    m2.metric("30일 이내", f"{len(normal_list)}명")
+    m3.metric("⚠️ 30일 초과", f"{len(over_list)}명")
     
     st.write("---")
     st.write("### ⚠️ 한 달(30일) 초과 미참석 회원 목록")
@@ -394,12 +385,12 @@ with tab3:
 
 # [TAB 4] 인터뷰 가이드
 with tab4:
-    st.subheader("💬 신규 회원 가입 인터뷰 가이드")
+    st.subheader("💬 가입 인터뷰 가이드")
     
     if "edit_guide" not in st.session_state:
         st.session_state["edit_guide"] = False
         
-    st.info("💡 아래 문구를 복사해서 신규 가입 신청자에게 안내 메시지로 보내세요.")
+    st.info("💡 신규 가입 신청자에게 안내할 문구입니다.")
     st.code(app_config.get("guide", DEFAULT_GUIDE), language=None)
     
     if st.button("✏️ 정보수정", key="btn_edit_guide"):
@@ -418,24 +409,6 @@ with tab4:
 
 # [TAB 5] 공지사항
 with tab5:
-    st.subheader("📢 모임 공지사항 게시판")
+    st.subheader("📢 공지사항")
     
-    if "edit_notice" not in st.session_state:
-        st.session_state["edit_notice"] = False
-        
-    st.info("📌 모임 주요 공지사항 및 운영 지침입니다.")
-    st.code(app_config.get("notice", DEFAULT_NOTICE), language=None)
-    
-    if st.button("✏️ 정보수정", key="btn_edit_notice"):
-        st.session_state["edit_notice"] = not st.session_state["edit_notice"]
-        st.rerun()
-        
-    if st.session_state["edit_notice"]:
-        with st.form("form_notice_edit"):
-            new_notice = st.text_area("공지 게시판 내용 입력 및 수정", value=app_config.get("notice", DEFAULT_NOTICE), height=200)
-            if st.form_submit_button("💾 공지사항 저장"):
-                app_config["notice"] = new_notice
-                save_config(app_config)
-                st.session_state["edit_notice"] = False
-                st.success("공지 게시판 내용이 성공적으로 저장되었습니다!")
-                st.rerun()
+    if "
