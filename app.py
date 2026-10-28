@@ -107,14 +107,14 @@ DEFAULT_GUIDE = """🩷솔로메이트 친목모임🩵
 지금 닉네임 수정하시면 승인해 드릴께요!
 
 닉네임 양식: 이름(성별/생년연도/지역)
-- 예시: 바론이(F/83/새절)
+- 예시: 바론이(여/83/새절)
 
 입장하시고 닉네임 수정하시고 가입 인사 부탁 드려요 😊"""
 
 DEFAULT_NOTICE = """📢 3040솔로메이트 모임 공지사항
 
 1. 한 달 반(45일)에 적어도 1회 이상 오프라인 모임 참석은 필수입니다.
-2. 닉네임 양식을 반드시 준수해 주세요 (예: 바론이(F/83/새절).
+2. 닉네임 양식을 반드시 준수해 주세요 (예: 바론이(F/83/새절)).
 3. 매너 있는 소통과 모임 참여를 당부드립니다!"""
 
 ADMIN_ROLES = {
@@ -438,4 +438,16 @@ with tab5:
     st.info("📌 모임 주요 공지사항 및 운영 지침입니다.")
     st.code(app_config.get("notice", DEFAULT_NOTICE), language=None)
     
-    if st.button("
+    if st.button("✏️ 정보수정", key="btn_edit_notice"):
+        st.session_state["edit_notice"] = not st.session_state["edit_notice"]
+        st.rerun()
+        
+    if st.session_state["edit_notice"]:
+        with st.form("form_notice_edit"):
+            new_notice = st.text_area("공지 게시판 내용 입력 및 수정", value=app_config.get("notice", DEFAULT_NOTICE), height=200)
+            if st.form_submit_button("💾 공지사항 저장"):
+                app_config["notice"] = new_notice
+                save_config(app_config)
+                st.session_state["edit_notice"] = False
+                st.success("공지 게시판 내용이 성공적으로 저장되었습니다!")
+                st.rerun()
