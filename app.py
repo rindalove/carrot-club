@@ -5,7 +5,7 @@ from datetime import datetime, date
 st.set_page_config(page_title="3040솔로메이트 어드민", page_icon="🥕", layout="centered")
 
 DATA_FILE = "club_members.json"
-BACKUP_FILE = "club_members_backup.json"  # 🛡️ 2중 백업 안전장치 파일 (초기화 완전 방지)
+BACKUP_FILE = "club_members_backup.json"  # 🛡️ 2중 백업 안전장치 파일 (초기화 완벽 방지)
 CONFIG_FILE = "app_config.json"
 
 # 📸 검수 완료 실제 회원 명단 (신규 회원 3명 추가 및 '줄스' 태국어 깨짐 수정 완료)
@@ -116,14 +116,12 @@ DEFAULT_GUIDE = """🩷솔로메이트 친목모임🩵
 
 입장하시고 닉네임 수정하시고 가입 인사 부탁 드려요 😊"""
 
-# 수정된 공지사항 내용 반영
 DEFAULT_NOTICE = """📢 3040솔로메이트 모임 공지사항
 
 1. 한 달 반(45일)에 적어도 1회 이상 오프라인 모임 참석은 필수입니다.
 2. 닉네임 양식을 반드시 준수해 주세요 (예: 바론이(F/83/새절)).
 3. 매너 있는 소통과 모임 참여를 당부드립니다!"""
 
-# 쥬니 방장 권한 삭제 완료
 ADMIN_ROLES = {
     "바론이": "부방장",
     "개동👑": "부방장",
@@ -142,7 +140,7 @@ def get_initial_data():
         }
     return data
 
-# 🛡️ 2중 안전 복구 로직 (메인 데이터 없을 시 백업본에서 복구)
+# 🛡️ 2중 안전 복구 로직 (메인 파일 없으면 백업 파일에서 자동 복구)
 def load_data():
     if os.path.exists(DATA_FILE):
         try:
@@ -158,7 +156,7 @@ def load_data():
             with open(BACKUP_FILE, "r", encoding="utf-8") as f:
                 d = json.load(f)
                 if isinstance(d, dict) and len(d) > 0:
-                    save_data(d)  # 메인 데이터 즉시 복구
+                    save_data(d)
                     return d
         except:
             pass
@@ -167,7 +165,7 @@ def load_data():
     save_data(init_d)
     return init_d
 
-# 🛡️ 2중 동시 저장 로직 (메인 파일 + 백업 파일 동시 기록)
+# 🛡️ 2중 동시 저장 로직 (메인 파일과 백업 파일에 동시에 기록)
 def save_data(d):
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(d, f, ensure_ascii=False, indent=4)
@@ -192,7 +190,7 @@ def save_config(cfg):
 members = load_data()
 app_config = load_config()
 
-# 커플 자동 매칭
+# 커플 매칭
 couple_dict = {
     "쥬니👑": ["개동👑"],
     "개동👑": ["쥬니👑"]
@@ -212,7 +210,6 @@ for emo, uids in emoji_map.items():
 
 st.markdown("<h3 style='color:#ff6f0f; margin-bottom:5px;'>🩷3040솔로메이트 어드민🩵</h3>", unsafe_allow_html=True)
 
-# 상단 메뉴: '45일 미참석'으로 변경 반영
 tab1, tab2, tab3, tab4, tab5 = st.tabs(["📋 회원 목록", "📊 45일 미참석", "➕ 회원 등록", "💬 인터뷰 가이드", "📢 공지 게시판"])
 today = date.today()
 
@@ -234,7 +231,6 @@ with tab1:
     else:
         items.sort(key=lambda x: x[0])
 
-    # 🟢 그린 왕관 운영진 최상단 배치
     items.sort(key=lambda x: 0 if x[1].get("운영진", False) else 1)
 
     st.metric("현재 총 회원 수", f"{len(items)} 명")
@@ -246,7 +242,6 @@ with tab1:
         except:
             dp = 0
 
-        # 45일 기준 경고 표시
         st_txt = f"⚠️ {dp}일 경과" if dp > 45 else f"✅ D+{dp}일"
         
         role_badges = []
@@ -312,7 +307,7 @@ with tab1:
                     r_idx = r_opts.index(curr_r) if curr_r in r_opts else 3
                     fe_role = st.selectbox("운영진 직책", r_opts, index=r_idx)
 
-                    fe_att_status = st.radio("월1회 참석 상태", ["참석", "미참석"], index=0 if info.get("월1회_참석여부") == "참석" else 1, horizontal=True)
+                    fe_att_status = st.radio("참석 상태", ["참석", "미참석"], index=0 if info.get("월1회_참석여부") == "참석" else 1, horizontal=True)
                     fe_feature = st.text_area("활동 특징", value=info.get("활동특징", "-"))
                     fe_looks = st.select_slider("외모", ["하", "중", "상"], value=info.get("외모", "중"))
                     fe_personality = st.select_slider("성격", ["하", "중", "상"], value=info.get("성격", "중"))
@@ -337,7 +332,7 @@ with tab1:
         st.success("기본 명단으로 초기화되었습니다!")
         st.rerun()
 
-# [TAB 2] 45일 미참석 (경과일수 계산 완비)
+# [TAB 2] 45일 미참석 (3개 칸 에러 해결 완벽 반영)
 with tab2:
     st.subheader("📊 45일 초과 미참석 회원 분석")
     
@@ -358,4 +353,92 @@ with tab2:
             
     m1, m2 = st.columns(2)
     m1.metric("45일 이내 정상 활동", f"{len(normal_list)} 명")
-    m2.metric("⚠️ 45일 초과 미참석", f"{len(over_
+    m2.metric("⚠️ 45일 초과 미참석", f"{len(over_45_list)} 명")
+    
+    st.write("---")
+    st.write("### ⚠️ 45일 이상 미참석 회원 목록 (지나간 일자 확인)")
+    if not over_45_list:
+        st.success("모든 회원이 45일 이내에 모임에 참여 중입니다!")
+    else:
+        for uid, info, dp in over_45_list:
+            st.warning(f"👤 **{uid}** ({info['성별']}/{info.get('출생년도','미입력')} | {info['지역']}) — 최근 참석일: {info.get('최근참석일','-')} (**총 {dp}일 지남**)")
+
+# [TAB 3] 회원 등록
+with tab3:
+    st.subheader("신규 회원 등록")
+    with st.form("add_form", clear_on_submit=True):
+        uid = st.text_input("아이디 (필수)")
+        gen = st.radio("성별", ["F", "M"], horizontal=True)
+        by = st.text_input("출생년도 (예: 85년생)")
+        reg = st.text_input("지역")
+        jd = st.date_input("가입일자", value=today)
+        is_admin_check = st.checkbox("🟢 운영진 권한 부여")
+        new_role = st.selectbox("운영진 직책", ["부방장", "방장", "운영진"])
+        att = st.radio("참석여부", ["참석", "미참석"], horizontal=True)
+        feat = st.text_area("특징", value="-")
+        lk = st.select_slider("외모", ["하", "중", "상"], value="중")
+        ps = st.select_slider("성격", ["하", "중", "상"], value="중")
+        
+        if st.form_submit_button("저장"):
+            if not uid.strip():
+                st.error("아이디를 입력해주세요!")
+            elif uid in members:
+                st.error("이미 존재하는 아이디입니다.")
+            else:
+                members[uid] = {
+                    "성별": gen, "출생년도": by or "미입력", "지역": reg, 
+                    "가입일자": str(jd), "월1회_참석여부": att, 
+                    "최근참석일": str(today), "활동특징": feat, "외모": lk, "성격": ps,
+                    "운영진": is_admin_check, "운영진직책": new_role if is_admin_check else "해당없음"
+                }
+                save_data(members)
+                st.success(f"🎉 [{uid}] 회원이 성공적으로 등록되었습니다!")
+                st.rerun()
+
+# [TAB 4] 인터뷰 가이드
+with tab4:
+    st.subheader("💬 신규 회원 가입 인터뷰 가이드")
+    
+    if "edit_guide" not in st.session_state:
+        st.session_state["edit_guide"] = False
+        
+    st.info("💡 아래 문구를 복사해서 신규 가입 신청자에게 안내 메시지로 보내세요.")
+    st.code(app_config.get("guide", DEFAULT_GUIDE), language=None)
+    
+    if st.button("✏️ 정보수정", key="btn_edit_guide"):
+        st.session_state["edit_guide"] = not st.session_state["edit_guide"]
+        st.rerun()
+        
+    if st.session_state["edit_guide"]:
+        with st.form("form_guide_edit"):
+            new_guide = st.text_area("인터뷰 가이드 문구 내용 수정", value=app_config.get("guide", DEFAULT_GUIDE), height=350)
+            if st.form_submit_button("💾 가이드 문구 저장"):
+                app_config["guide"] = new_guide
+                save_config(app_config)
+                st.session_state["edit_guide"] = False
+                st.success("인터뷰 가이드 문구가 성공적으로 저장되었습니다!")
+                st.rerun()
+
+# [TAB 5] 공지 게시판
+with tab5:
+    st.subheader("📢 운영진 공지 게시판")
+    
+    if "edit_notice" not in st.session_state:
+        st.session_state["edit_notice"] = False
+        
+    st.info("📌 모임 주요 공지사항 및 운영 지침입니다.")
+    st.code(app_config.get("notice", DEFAULT_NOTICE), language=None)
+    
+    if st.button("✏️ 정보수정", key="btn_edit_notice"):
+        st.session_state["edit_notice"] = not st.session_state["edit_notice"]
+        st.rerun()
+        
+    if st.session_state["edit_notice"]:
+        with st.form("form_notice_edit"):
+            new_notice = st.text_area("공지 게시판 내용 입력 및 수정", value=app_config.get("notice", DEFAULT_NOTICE), height=200)
+            if st.form_submit_button("💾 공지사항 저장"):
+                app_config["notice"] = new_notice
+                save_config(app_config)
+                st.session_state["edit_notice"] = False
+                st.success("공지 게시판 내용이 성공적으로 저장되었습니다!")
+                st.rerun()
