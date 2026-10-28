@@ -5,7 +5,7 @@ from datetime import datetime, date
 st.set_page_config(page_title="🩷3040솔로메이트어드민🩵", page_icon="🥕", layout="centered")
 
 DATA_FILE = "club_members.json"
-BACKUP_FILE = "club_members_backup.json"  # 🛡️ 안전장치 1: 2중 백업 파일
+BACKUP_FILE = "club_members_backup.json"  # 🛡️ 2중 백업 안전장치 파일
 CONFIG_FILE = "app_config.json"
 
 # 📸 이미지 기반 검수 완료 회원 명단 (부이브이, 혀날도, 슈퍼홍, 리키 제외)
@@ -134,9 +134,8 @@ def get_initial_data():
         }
     return data
 
-# 🛡️ 안전장치 2: 기본 파일 -> 백업 파일 순서로 데이터 복원
+# 🛡️ 백업 파일까지 확인하는 안전한 데이터 불러오기
 def load_data():
-    # 1차 시도: 기본 메인 파일 읽기
     if os.path.exists(DATA_FILE):
         try:
             with open(DATA_FILE, "r", encoding="utf-8") as f:
@@ -149,23 +148,22 @@ def load_data():
         except:
             pass
             
-    # 2차 시도: 메인 파일이 사라졌을 때 백업 파일에서 안전하게 가져오기
+    # 메인 파일이 없으면 백업 파일에서 복구 시도
     if os.path.exists(BACKUP_FILE):
         try:
             with open(BACKUP_FILE, "r", encoding="utf-8") as f:
                 d = json.load(f)
                 if isinstance(d, dict) and len(d) > 0:
-                    save_data(d) # 메인 파일 복구 실행
+                    save_data(d)
                     return d
         except:
             pass
             
-    # 3차: 파일이 정말 하나도 없는 경우에만 초기 명단 생성
     init_d = get_initial_data()
     save_data(init_d)
     return init_d
 
-# 🛡️ 안전장치 3: 저장할 때 메인 파일과 백업 파일 동시 2중 저장
+# 🛡️ 데이터를 저장할 때 메인 파일과 백업 파일을 동시에 저장
 def save_data(d):
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(d, f, ensure_ascii=False, indent=4)
@@ -190,7 +188,7 @@ def save_config(cfg):
 members = load_data()
 app_config = load_config()
 
-# 커플 자동 매칭 (이모지 기반 및 수동 설정)
+# 커플 자동 매칭
 couple_dict = {
     "쥬니👑": ["개동👑"],
     "개동👑": ["쥬니👑"]
@@ -210,7 +208,7 @@ for emo, uids in emoji_map.items():
 
 st.markdown("<h3 style='color:#ff6f0f; margin-bottom:5px;'>🩷3040솔로메이트어드민🩵</h3>", unsafe_allow_html=True)
 
-# 메인 메뉴 순서: 가입 인터뷰 가이드가 공지사항 바로 앞으로 배치됨
+# 상단 메뉴 구성 (전체 회원, 한달 참석, 신규 회원 등록, 가입 인터뷰 가이드, 공지사항)
 tab1, tab2, tab3, tab4, tab5 = st.tabs(["📋 전체 회원", "📊 한달 참석", "➕ 신규 회원 등록", "💬 가입 인터뷰 가이드", "📢 공지사항"])
 today = date.today()
 
@@ -257,7 +255,7 @@ with tab1:
         with st.expander(f"👤 {uid} ({info['성별']}/{info.get('출생년도','미입력')}){badge_str}"):
             ca, cb = st.columns(2)
             
-            # 상세 내용 순서 반영
+            # 개인 정보 상세 순서: 지역, 가입일자, 최근 벙참여, 경과일자, 후기작성, 외모, 특징
             ca.write(f"**📍 지역:** {info['지역']}")
             ca.write(f"**📅 가입일자:** {info.get('가입일자','-')}")
             ca.write(f"**📌 최근 벙참여:** {ld_str}")
@@ -405,7 +403,7 @@ with tab3:
                 st.success(f"🎉 [{uid}] 회원이 성공적으로 등록되었습니다!")
                 st.rerun()
 
-# [TAB 4] 가입 인터뷰 가이드 (수정 기능 완비)
+# [TAB 4] 가입 인터뷰 가이드
 with tab4:
     st.subheader("💬 가입 인터뷰 가이드")
     
@@ -429,7 +427,7 @@ with tab4:
                 st.success("인터뷰 가이드 문구가 성공적으로 저장되었습니다!")
                 st.rerun()
 
-# [TAB 5] 공지사항 (수정 기능 완비)
+# [TAB 5] 공지사항
 with tab5:
     st.subheader("📢 공지사항")
     
