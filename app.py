@@ -8,7 +8,7 @@ DATA_FILE = "club_members.json"
 BACKUP_FILE = "club_members_backup.json"  # 🛡️ 2중 백업 안전장치 파일 (초기화 완벽 방지)
 CONFIG_FILE = "app_config.json"
 
-# 📸 검수 완료 실제 회원 명단 (신규 회원 3명 추가 및 '줄스' 태국어 깨짐 수정 완료)
+# 📸 첨부해주신 최신 캡처 이미지 기반으로 완전히 새롭게 정리된 53명 회원 명단 (중복 제거 및 정보 검수 완료)
 RAW_DATA = [
     ("보리", "F", "86년생", "갈현동", "2025-03-24"),
     ("쥬니👑", "F", "85년생", "북가좌제2동", "2025-03-24"),
@@ -62,10 +62,7 @@ RAW_DATA = [
     ("콩이", "F", "85년생", "홍제제3동", "2026-10-04"),
     ("줄스", "F", "83년생", "대조동", "2026-10-06"),
     ("우지", "M", "90년생", "역촌동", "2026-10-06"),
-    ("호야", "M", "82년생", "구산동", "2026-10-11"),
-    ("헬기", "M", "86년생", "증산동", "2026-10-21"),
-    ("덕배", "M", "88년생", "향동", "2026-10-21"),
-    ("베인", "F", "85년생", "응암동", "2026-10-23")
+    ("호야", "M", "82년생", "구산동", "2026-10-11")
 ]
 
 DEFAULT_GUIDE = """🩷솔로메이트 친목모임🩵
@@ -136,7 +133,7 @@ def get_initial_data():
             "성별": g, "출생년도": b, "지역": r, "가입일자": j, 
             "월1회_참석여부": "미참석", "최근참석일": j, "활동특징": "-", 
             "외모": "중", "성격": "중", "운영진": (u in ADMIN_ROLES),
-            "운영진직책": role
+            "운영진직책": role, "후기작성여부": "미작성"
         }
     return data
 
@@ -147,6 +144,9 @@ def load_data():
             with open(DATA_FILE, "r", encoding="utf-8") as f:
                 d = json.load(f)
                 if isinstance(d, dict) and len(d) > 0:
+                    for u in d:
+                        if "후기작성여부" not in d[u]:
+                            d[u]["후기작성여부"] = "미작성"
                     return d
         except:
             pass
@@ -156,6 +156,9 @@ def load_data():
             with open(BACKUP_FILE, "r", encoding="utf-8") as f:
                 d = json.load(f)
                 if isinstance(d, dict) and len(d) > 0:
+                    for u in d:
+                        if "후기작성여부" not in d[u]:
+                            d[u]["후기작성여부"] = "미작성"
                     save_data(d)
                     return d
         except:
@@ -258,10 +261,10 @@ with tab1:
             
             ca.write(f"**📍 지역:** {info['지역']}")
             ca.write(f"**📅 가입일자:** {info.get('가입일자','-')}")
-            ca.write(f"**✨ 외모 평가:** {info.get('외모','중')}")
+            ca.write(f"**✍️ 후기작성:** {info.get('후기작성여부','미작성')}")
             
-            cb.write(f"**💖 성격 평가:** {info.get('성격','중')}")
             cb.write(f"**⏳ 참석 경과:** {dp}일 ({st_txt})")
+            cb.write(f"**✨ 외모/성격:** {info.get('외모','중')} / {info.get('성격','중')}")
             cb.write(f"**📌 최근 참석일:** {ld_str}")
             
             st.write(f"**📝 활동 특징:** {info.get('활동특징','-')}")
@@ -308,6 +311,12 @@ with tab1:
                     fe_role = st.selectbox("운영진 직책", r_opts, index=r_idx)
 
                     fe_att_status = st.radio("참석 상태", ["참석", "미참석"], index=0 if info.get("월1회_참석여부") == "참석" else 1, horizontal=True)
+                    
+                    curr_review = info.get("후기작성여부", "미작성")
+                    rev_opts = ["작성완료", "미작성"]
+                    rev_idx = rev_opts.index(curr_review) if curr_review in rev_opts else 1
+                    fe_review_status = st.radio("후기작성 여부", rev_opts, index=rev_idx, horizontal=True)
+
                     fe_feature = st.text_area("활동 특징", value=info.get("활동특징", "-"))
                     fe_looks = st.select_slider("외모", ["하", "중", "상"], value=info.get("외모", "중"))
                     fe_personality = st.select_slider("성격", ["하", "중", "상"], value=info.get("성격", "중"))
@@ -318,7 +327,8 @@ with tab1:
                             "가입일자": str(fe_join), "최근참석일": str(fe_att_date),
                             "월1회_참석여부": fe_att_status, "활동특징": fe_feature,
                             "외모": fe_looks, "성격": fe_personality, 
-                            "운영진": fe_is_admin, "운영진직책": fe_role if fe_is_admin else "해당없음"
+                            "운영진": fe_is_admin, "운영진직책": fe_role if fe_is_admin else "해당없음",
+                            "후기작성여부": fe_review_status
                         }
                         save_data(members)
                         st.session_state[edit_key] = False
@@ -332,7 +342,7 @@ with tab1:
         st.success("기본 명단으로 초기화되었습니다!")
         st.rerun()
 
-# [TAB 2] 45일 미참석 (3개 칸 에러 해결 완벽 반영)
+# [TAB 2] 45일 미참석
 with tab2:
     st.subheader("📊 45일 초과 미참석 회원 분석")
     
@@ -375,6 +385,7 @@ with tab3:
         is_admin_check = st.checkbox("🟢 운영진 권한 부여")
         new_role = st.selectbox("운영진 직책", ["부방장", "방장", "운영진"])
         att = st.radio("참석여부", ["참석", "미참석"], horizontal=True)
+        rev_reg = st.radio("후기작성 여부", ["작성완료", "미작성"], horizontal=True)
         feat = st.text_area("특징", value="-")
         lk = st.select_slider("외모", ["하", "중", "상"], value="중")
         ps = st.select_slider("성격", ["하", "중", "상"], value="중")
@@ -389,7 +400,8 @@ with tab3:
                     "성별": gen, "출생년도": by or "미입력", "지역": reg, 
                     "가입일자": str(jd), "월1회_참석여부": att, 
                     "최근참석일": str(today), "활동특징": feat, "외모": lk, "성격": ps,
-                    "운영진": is_admin_check, "운영진직책": new_role if is_admin_check else "해당없음"
+                    "운영진": is_admin_check, "운영진직책": new_role if is_admin_check else "해당없음",
+                    "후기작성여부": rev_reg
                 }
                 save_data(members)
                 st.success(f"🎉 [{uid}] 회원이 성공적으로 등록되었습니다!")
