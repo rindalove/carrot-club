@@ -332,12 +332,6 @@ with tab1:
                         st.success(f"[{uid}] 회원 정보 저장이 완료되었습니다!")
                         st.rerun()
 
-    st.write("---")
-    if st.button("🔄 기본 명단으로 강제 초기화/리셋", use_container_width=True):
-        init_d = get_initial_data()
-        save_data(init_d)
-        st.success("새 기본 명단으로 초기화되었습니다!")
-        st.rerun()
 
 # [TAB 2] 45일 미참석
 with tab2:
